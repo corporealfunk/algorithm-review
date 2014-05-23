@@ -19,22 +19,25 @@ int choose_pivot(int partitionStartIndex, int partitionEndIndex) {
  * array and anything larger than the pivot to the right
  */
 int partition(int array[], int partitionStartIndex, int partitionEndIndex) {
-  int pivot = choose_pivot(partitionStartIndex, partitionEndIndex);
-  int i = partitionStartIndex;
+  int pivotIndex = choose_pivot(partitionStartIndex, partitionEndIndex);
+  int i = partitionStartIndex + 1;
+
+  // swap pivot to the front of the sub array
+  swap(array[pivotIndex], array[partitionStartIndex]);
 
   // loop through range
-  for (int j = partitionStartIndex; j <= partitionEndIndex; j++) {
+  for (int j = partitionStartIndex + 1; j <= partitionEndIndex; j++) {
     // if element is less than the pivot, increment i
     // and swap the element with i
-    if (array[j] < array[pivot]) {
-      i++;
+    if (array[j] < array[partitionStartIndex]) {
       swap(array[i], array[j]);
+      i++;
     }
   }
 
   // swap the pivot into its correct place
-  swap(array[pivot], array[i]);
-  return i;
+  swap(array[partitionStartIndex], array[i - 1]);
+  return i - 1;
 }
 
 void quick_sort(int array[], int sortStartIndex, int sortEndIndex) {

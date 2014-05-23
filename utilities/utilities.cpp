@@ -43,3 +43,12 @@ void printArray(int array[], int arrayLength, string label) {
     cout << array[i] << endl;
   }
 }
+
+void printSubArray(int array[], int startIndex, int endIndex, string label) {
+  using namespace std;
+
+  cout << label << endl;
+  for (int i = startIndex; i <= endIndex; i++) {
+    cout << array[i] << endl;
+  }
+}
