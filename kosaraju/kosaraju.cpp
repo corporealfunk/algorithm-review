@@ -15,8 +15,6 @@ using namespace std;
 class Node {
   int label;
   bool explored;
-  Node* leader;
-  int finishingTime;
 
   vector<Node*> outgoingNodes;
   vector<Node*> incomingNodes;
@@ -24,15 +22,11 @@ class Node {
   public:
   Node(int labelName) {
     explored = false;
-    leader = 0;
-    finishingTime = -1;
     label = labelName;
   }
 
   Node() {
     explored = false;
-    leader = 0;
-    finishingTime = -1;
     label = -1;
   }
 
@@ -49,14 +43,6 @@ class Node {
     return (label - 1);
   }
 
-  Node* getLeader() {
-    return leader;
-  }
-
-  void setLeader(Node* nodeLeader) {
-    leader = nodeLeader;
-  }
-
   bool isExplored() {
     return explored;
   }
@@ -67,14 +53,6 @@ class Node {
 
   void markUnExplored() {
     explored = false;
-  }
-
-  int getFinishingTime() {
-    return finishingTime;
-  }
-
-  void setFinishingTime(int time) {
-    finishingTime = time;
   }
 
   const vector<Node*>& getOutgoingNodes() {
@@ -95,7 +73,7 @@ class Node {
 };
 
 void printNode(Node* node) {
-  cout << node->getPosition() << ": " << ((node->isExplored()) ? "Y" : "N" ) << " - fT: " << node->getFinishingTime() << " - o: ";
+  cout << node->getPosition() << ": " << ((node->isExplored()) ? "Y" : "N" ) << ": o: ";
 
   vector<Node*> outgoingNodes = node->getOutgoingNodes();
   vector<Node*> incomingNodes = node->getIncomingNodes();
@@ -140,7 +118,6 @@ void dfsFirstPass(vector<Node*>& nodes, int nodeIndex, int& finishingTime, Node*
   }
 
   finishingTime++;
-  nodes[nodeIndex]->setFinishingTime(finishingTime);
   finishingOrdered[finishingTime - 1] = nodes[nodeIndex];
 }
 
@@ -160,7 +137,6 @@ void dfsSecondPass(vector<Node*>& nodes, int nodeIndex, Node* leader, map<int,in
     }
   }
 
-  nodes[nodeIndex]->setLeader(leader);
   leaderBoard[leader->getPosition()]++;
 }
 
