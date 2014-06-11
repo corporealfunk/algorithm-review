@@ -102,7 +102,6 @@ int main() {
   int startNodeLabel = 1;
 
   // we need to find the start node in our vector and move it out of the heap:
-  vector< Node* >::iterator itNodes;
   Node* startNode = nodesRemainingPositionIndex[startNodeLabel];
 
   Node* workingNode;
@@ -130,30 +129,28 @@ int main() {
     // place it into the nodesProcessed:
     nodesProcessed[workingNode->getLabel()] = workingNode;
 
-    // for all edges with tail in processed and head in remaining, calc the greedyScore:
-    for (itNodesMap = nodesProcessed.begin(); itNodesMap != nodesProcessed.end(); itNodesMap++) {
-      edgesToExplore = itNodesMap->second->getEdges();
-      for (itEdge = edgesToExplore.begin(); itEdge != edgesToExplore.end(); itEdge++) {
-//        cout << "  examine edge: " << itNodesMap->second->getLabel() << "->" << itEdge->second->getHead() << endl;
+    // for all edges with tail from workingNode
+    edgesToExplore = workingNode->getEdges();
+    for (itEdge = edgesToExplore.begin(); itEdge != edgesToExplore.end(); itEdge++) {
+//        cout << "  examine edge: " << workingNode->getLabel() << "->" << itEdge->second->getHead() << endl;
 
-        // only calculate the head node's greedyScore if it is not in nodesProcessed:
-        if (nodesProcessed.count(itEdge->second->getHead()) == 0) {
-          // to calculate greedy score, add the greedy score of the tail to the length of this edge:
-          greedyScore = itNodesMap->second->getGreedyScore() + itEdge->second->getLength();
+      // only calculate the head node's greedyScore if it is not in nodesProcessed:
+      if (nodesProcessed.count(itEdge->second->getHead()) == 0) {
+        // to calculate greedy score, add the greedy score of the tail to the length of this edge:
+        greedyScore = workingNode->getGreedyScore() + itEdge->second->getLength();
 //          cout << "    -> calculate greedy score of node " << itEdge->second->getHead() << " = " << greedyScore << endl;
 
-          headNode = nodesRemainingPositionIndex[itEdge->second->getHead()];
+        headNode = nodesRemainingPositionIndex[itEdge->second->getHead()];
 
-          // if the node already has a lower greedy score, don't overwrite it:
-          if (greedyScore < headNode->getGreedyScore()) {
-            headNode->setGreedyScore(greedyScore);
-          }
+        // if the node already has a lower greedy score, don't overwrite it:
+        if (greedyScore < headNode->getGreedyScore()) {
+          headNode->setGreedyScore(greedyScore);
         }
       }
     }
   }
 
-  cout << "Node / Distance from node " << startNode << ":" << endl;
+  cout << "Node / Distance from node " << startNode->getLabel() << ":" << endl;
   for (itNodesMap = nodesProcessed.begin(); itNodesMap != nodesProcessed.end(); itNodesMap++) {
     cout << itNodesMap->first << " / " << itNodesMap->second->getGreedyScore() << endl;
   }
