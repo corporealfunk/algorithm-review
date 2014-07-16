@@ -5,7 +5,6 @@
 #include <vector>
 #include <map>
 #include <tr1/unordered_map>
-#include <algorithm>
 #include <sys/resource.h>
 using namespace std;
 
@@ -14,17 +13,6 @@ struct Node {
   int discovered;
   vector< bool >* bitVector;
 };
-
-int decimalFromBoolVector(vector< bool >& bitVector) {
-  vector< bool >::iterator bIt;
-
-  int decimal = 0;
-  for (bIt = bitVector.begin(); bIt != bitVector.end(); bIt++) {
-    decimal = decimal * 2 + (int)*bIt;
-  }
-
-  return decimal;
-}
 
 void printNode(Node& node) {
   vector< bool >::iterator bIt;
@@ -36,22 +24,23 @@ void printNode(Node& node) {
   cout << " = " << node.label << endl;
 }
 
-vector< vector< bool > >& getBitMasks(int maskSize) {
-  vector< vector< bool > >* masks;
+vector< int >& getBitMasks(int maskSize) {
+  vector< int >* masks;
 
-  masks = new vector< vector< bool > >;
+  masks = new vector< int >;
 
   // masks for 1 bit away
+  bool bit = 0;
   for (int x = 0; x < maskSize; x++) {
-    vector < bool > mask;
-    mask.resize(maskSize);
+    int mask = 0;
 
     for (int y = 0; y < maskSize; y++) {
       if (y != x) {
-        mask[y] = false;
+        bit = 0;
       } else {
-        mask[y] = true;
+        bit = 1;
       }
+      mask = mask * 2 + (int)bit;
     }
     masks->push_back(mask);
   }
@@ -63,16 +52,16 @@ vector< vector< bool > >& getBitMasks(int maskSize) {
     flipX = x;
 
     for (int y = x + 1; y < maskSize; y++) {
-      vector < bool > mask;
-      mask.resize(maskSize);
+      int mask = 0;
 
       flipY = y;
       for (int j = 0; j < maskSize; j++) {
         if (flipY == j || flipX == j) {
-          mask[j] = true;
+          bit = 1;
         } else {
-          mask[j] = false;
+          bit = 0;
         }
+        mask = mask * 2 + (int)bit;
       }
       masks->push_back(mask);
     }
@@ -81,35 +70,20 @@ vector< vector< bool > >& getBitMasks(int maskSize) {
   return *masks;
 }
 
-void dfsNode(Node& node, tr1::unordered_map< long int, Node* >& nodes, vector< vector< bool > >& masks) {
-  if (node.discovered) {
-    return;
-  }
-
+void dfsNode(Node& node, tr1::unordered_map< long int, Node* >& nodes, const vector< int >& masks) {
 //  cout << "----------" << endl;
+//  printNode(node);
 
   node.discovered = true;
 
   // we need to create bit flips to get us 1 and 2 away
-//  printNode(node);
-
   int nodeToFind;
-  vector< vector< bool > >::iterator masksIt;
 
-  for (masksIt = masks.begin(); masksIt != masks.end(); masksIt++) {
-    vector< bool > xorD;
-    xorD.resize(node.bitVector->size());
+  for (int i = 0; i < masks.size(); i++) {
+    // for each mask, we need to XOR (^) the mask and label
+    nodeToFind = node.label ^ masks[i];
 
-    for (int x = 0; x < masksIt->size(); x++) {
-      if ((*masksIt)[x] == (*node.bitVector)[x]) {
-        xorD[x] = false;
-      } else {
-        xorD[x] = true;
-      }
-    }
-    nodeToFind = decimalFromBoolVector(xorD);
-
-    if (nodes.count(nodeToFind) == 1) {
+    if (nodes.count(nodeToFind) == 1 && !nodes[nodeToFind]->discovered) {
       dfsNode(*nodes[nodeToFind], nodes, masks);
     }
   }
@@ -117,7 +91,7 @@ void dfsNode(Node& node, tr1::unordered_map< long int, Node* >& nodes, vector< v
 
 int main() {
   // increase stack size:
-  const rlim_t kStackSize = 63 * 1024 * 1024;
+  const rlim_t kStackSize = 16 * 1024 * 1024;
   struct rlimit rl;
   int result;
 
@@ -151,12 +125,14 @@ int main() {
 
   Node* node;
 
+  cout << "Reading File..." << endl;
   while (getline(dataFile, line)) {
     istringstream iss(line);
     node = new Node();
     node->discovered = false;
     node->bitVector = new vector< bool >;
     node->bitVector->resize(numBits);
+    node->label = 0;
     int i = 0;
 
     while (iss >> sBit) {
@@ -165,16 +141,15 @@ int main() {
       } else if (sBit == "0") {
         (*node->bitVector)[i] = false;
       }
+      node->label = node->label * 2 + (int)(*node->bitVector)[i];
       i++;
     }
-
-    // convert the vector<bool> to decimal
-    node->label = decimalFromBoolVector(*(node->bitVector));
 
     // add to heap:
     nodes[node->label] = node;
   }
   dataFile.close();
+  cout << "...done reading " << nodes.size() << " unique nodes" << endl;
 
   // we need to find the number of connected components where all
   // members of a given component have edges with distance < 3
@@ -190,7 +165,7 @@ int main() {
   tr1::unordered_map< long int, Node* >::iterator nodesIt;
   int clusters = 0;
 
-  vector< vector< bool > > masks;
+  vector< int > masks;
   masks = getBitMasks(node->bitVector->size());
   for (nodesIt = nodes.begin(); nodesIt != nodes.end(); nodesIt++) {
     node = nodesIt->second;
