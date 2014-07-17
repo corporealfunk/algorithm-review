@@ -49,6 +49,12 @@ int main() {
             matrix[i][x] = matrix[i-1][curWeight-weight - 1] + value;
           }
         } // first i?
+      } else {
+        // we don't fit in an x-sized sack, so we need to copy over the answer
+        // from i-1[x]
+        if (i != 0) {
+          matrix[i][x] = matrix[i-1][x];
+        }
       } // weight <= curWeight?
 //      cout << i << "," << x << " = " << matrix[i][x] << endl;
     } // loop all weights
