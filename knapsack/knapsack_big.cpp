@@ -7,6 +7,8 @@
 #include <map>
 using namespace std;
 
+int maxX = 0;
+
 struct Item {
   int value;
   int weight;
@@ -34,18 +36,12 @@ bool compareNodes(Node* a, Node* b) {
   }
 }
 
-string returnKey(int i, int x) {
-  stringstream ii, xx;
-
-  xx << i;
-  string iStr = xx.str();
-
-  ii << x;
-  string xStr = ii.str();
-  return iStr + "," + xStr;
+int returnKey(int i, int x) {
+  // numbers elements in our i,x matrix
+  return (i * maxX) + i + x;
 }
 
-void computeNode(int i, int x, tr1::unordered_map<string, Node* >& toCompute, Item** items) {
+void computeNode(int i, int x, tr1::unordered_map<int, Node* >& toCompute, Item** items) {
   // base case: weight is < 1
   // base case: i is < 1
   if (x < 1 || i < 0) {
@@ -85,6 +81,7 @@ int main() {
   iss >> maxWeight >> numItems;
 
   cout << "NumItems: " << numItems << ". Sack: " << maxWeight << endl;
+  maxX = maxWeight;
 
   Item** items = 0;;
   items = new Item*[numItems];
@@ -103,12 +100,12 @@ int main() {
   dataFile.close();
 
   // recursivley compute from upper right down
-  tr1::unordered_map< string, Node* > toCompute;
+  tr1::unordered_map< int, Node* > toCompute;
   computeNode(numItems - 1, maxWeight, toCompute, items);
   cout << "Must Compute " << toCompute.size() << " nodes in the matrix." << endl;
 
   // sort the nodes into a vector first:
-  tr1::unordered_map< string, Node* >::iterator it;
+  tr1::unordered_map< int, Node* >::iterator it;
 
   vector< Node* > nodesSorted;
   nodesSorted.resize(toCompute.size());
